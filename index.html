@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trip Cost Splitter</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f8fb;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    input[type="number"] {
+      width: 80px;
+      padding: 6px;
+      margin-right: 10px;
+    }
+    .person {
+      margin: 10px 0;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .result {
+      margin-top: 20px;
+      background: #ecf0f1;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Trip Cost Splitter</h1>
+  <div class="container">
+    <div>
+      <h3>Enter Amount Paid (Tk)</h3>
+      <div class="person">
+        <label>Jonaid (Going): <input type="number" id="jonaidGoing" value="100" /></label>
+        <label>Returning: <input type="number" id="jonaidReturn" value="0" /></label>
+      </div>
+      <div class="person">
+        <label>Kawser (Going): <input type="number" id="kawserGoing" value="20" /></label>
+        <label>Returning: <input type="number" id="kawserReturn" value="50" /></label>
+      </div>
+      <div class="person">
+        <label>Sifat (Going): <input type="number" id="sifatGoing" value="0" /></label>
+        <label>Returning: <input type="number" id="sifatReturn" value="50" /></label>
+      </div>
+      <div class="person">
+        <label>Rakib (Going): <input type="number" id="rakibGoing" value="0" /></label>
+        <label>Returning: <input type="number" id="rakibReturn" value="0" /></label>
+      </div>
+    </div>
+    <button onclick="calculate()">Calculate</button>
+    <div class="result" id="output"></div>
+  </div>
+
+  <script>
+    function calculate() {
+      const names = ["Jonaid", "Kawser", "Sifat", "Rakib"];
+      const paid = [
+        +document.getElementById("jonaidGoing").value + +document.getElementById("jonaidReturn").value,
+        +document.getElementById("kawserGoing").value + +document.getElementById("kawserReturn").value,
+        +document.getElementById("sifatGoing").value + +document.getElementById("sifatReturn").value,
+        +document.getElementById("rakibGoing").value + +document.getElementById("rakibReturn").value
+      ];
+
+      const total = paid.reduce((sum, val) => sum + val, 0);
+      const share = total / 4;
+      const balance = paid.map(p => +(p - share).toFixed(2));
+
+      let result = `Total Cost: ${total} Tk\nEach Should Pay: ${share.toFixed(2)} Tk\n\n`;
+
+      for (let i = 0; i < 4; i++) {
+        result += `${names[i]} paid: ${paid[i]} Tk → balance: ${balance[i] >= 0 ? '+' : ''}${balance[i]} Tk\n`;
+      }
+
+      result += `\nSuggested Payments:\n`;
+
+      let owes = [], gets = [];
+      for (let i = 0; i < 4; i++) {
+        if (balance[i] < -0.01) owes.push({i, amt: -balance[i]});
+        else if (balance[i] > 0.01) gets.push({i, amt: balance[i]});
+      }
+
+      while (owes.length && gets.length) {
+        let payer = owes[0], receiver = gets[0];
+        let transfer = Math.min(payer.amt, receiver.amt);
+
+        result += `${names[payer.i]} pays ${names[receiver.i]}: ${transfer.toFixed(2)} Tk\n`;
+
+        payer.amt -= transfer;
+        receiver.amt -= transfer;
+
+        if (payer.amt < 0.01) owes.shift();
+        if (receiver.amt < 0.01) gets.shift();
+      }
+
+      document.getElementById("output").innerHTML = `<pre>${result}</pre>`;
+    }
+  </script>
+</body>
+</html>
