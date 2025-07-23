@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="logo.png" type="image/png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vara Koto 😁</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="logo.png" type="image/png" />
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Roboto', sans-serif;
       background: linear-gradient(135deg, #6e8efb, #a777e3);
       margin: 0;
-      padding: 40px 20px;
+      padding: 20px;
       color: #333;
     }
 
@@ -21,20 +21,21 @@
       font-family: "Hind Siliguri", sans-serif;
       font-weight: 600;
       text-align: center;
-      color: #ffffff;
+      color: #fff;
+      margin-bottom: 20px;
     }
 
     .container {
-      max-width: 700px;
+      max-width: 800px;
       margin: auto;
       background: #fff;
-      padding: 30px;
+      padding: 20px;
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
     .container h3 {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       color: #2c3e50;
       border-left: 5px solid #6e8efb;
       padding-left: 10px;
@@ -43,9 +44,9 @@
     .person {
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
       gap: 10px;
       margin-bottom: 10px;
+      align-items: center;
     }
 
     .person label {
@@ -53,11 +54,9 @@
       font-weight: 500;
     }
 
-    input[type="number"],
-    input[type="text"] {
+    input[type="number"] {
       width: 100%;
       padding: 8px;
-      margin-top: 4px;
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 14px;
@@ -65,7 +64,7 @@
 
     .remove-btn {
       background: #ff4d4d;
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 6px;
       padding: 5px 10px;
@@ -94,13 +93,78 @@
       background: linear-gradient(to right, #5d7df5, #9e67dc);
     }
 
-    .result {
-      margin-top: 20px;
+    /* Invoice Style */
+    .invoice {
+      margin-top: 30px;
       background: #f9f9f9;
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: 'Roboto', sans-serif;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .invoice-header {
+      background: #001f3f;
+      color: #fff;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .invoice-body {
+      background: #fff;
+      color: #333;
+      padding: 20px;
+    }
+
+    .invoice-body table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .invoice-body th, .invoice-body td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .invoice-body th {
+      background: #f1f1f1;
+    }
+
+    .invoice-summary {
+      margin-top: 20px;
+      text-align: right;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .invoice-footer {
+      background: #f1f1f1;
       padding: 15px;
-      border-radius: 8px;
+      text-align: left;
       font-size: 14px;
-      white-space: pre-wrap;
+      border-top: 2px solid #001f3f;
+    }
+
+    .settlement {
+      background: #001f3f;
+      color: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .invoice-header, .invoice-footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .person label {
+        flex: 1 1 100%;
+      }
     }
   </style>
 </head>
@@ -109,7 +173,6 @@
   <div class="container">
     <h3>Enter Amount Paid (Tk)</h3>
     <div id="friendList">
-      <!-- Default Friends -->
       <div class="person" data-name="Sifat">
         <label>Sifat (Going): <input type="number" value="0" class="going" /></label>
         <label>Returning: <input type="number" value="0" class="returning" /></label>
@@ -140,7 +203,7 @@
     <button class="action-btn" onclick="addFriend()">+ Add Friend</button>
     <button class="action-btn" onclick="calculate()">Calculate</button>
 
-    <div class="result" id="output"></div>
+    <div class="invoice" id="output"></div>
   </div>
 
   <script>
@@ -180,13 +243,37 @@
       const share = total / paid.length;
       const balance = paid.map(p => +(p - share).toFixed(2));
 
-      let result = `Total Cost: ${total} Tk\nEach Should Pay: ${share.toFixed(2)} Tk\n\n`;
+      // Invoice Body
+      let invoiceHTML = `
+        <div class="invoice-header">
+          <div>
+            <h2>Travel Invoice</h2>
+            <p>Date: ${new Date().toLocaleDateString()}</p>
+          </div>
+          <div><strong>Total: ${total} Tk</strong></div>
+        </div>
+        <div class="invoice-body">
+          <table>
+            <tr><th>Name</th><th>Paid</th><th>Balance</th></tr>`;
       for (let i = 0; i < names.length; i++) {
-        result += `${names[i]} paid: ${paid[i]} Tk → balance: ${balance[i] >= 0 ? '+' : ''}${balance[i]} Tk\n`;
+        invoiceHTML += `
+          <tr>
+            <td>${names[i]}</td>
+            <td>${paid[i]} Tk</td>
+            <td style="color:${balance[i] >= 0 ? 'green' : 'red'};">
+              ${balance[i] >= 0 ? '+' : ''}${balance[i]} Tk
+            </td>
+          </tr>`;
       }
+      invoiceHTML += `
+          </table>
+          <div class="invoice-summary">
+            <div>Each Should Pay: <b>${share.toFixed(2)} Tk</b></div>
+          </div>
+        </div>`;
 
-      result += `\nSuggested Payments:\n`;
-      let owes = [], gets = [];
+      // Settlement Calculation
+      let owes = [], gets = [], settlements = "";
       for (let i = 0; i < names.length; i++) {
         if (balance[i] < -0.01) owes.push({i, amt: -balance[i]});
         else if (balance[i] > 0.01) gets.push({i, amt: balance[i]});
@@ -195,17 +282,20 @@
       while (owes.length && gets.length) {
         let payer = owes[0], receiver = gets[0];
         let transfer = Math.min(payer.amt, receiver.amt);
-
-        result += `${names[payer.i]} pays ${names[receiver.i]}: ${transfer.toFixed(2)} Tk\n`;
-
+        settlements += `${names[payer.i]} pays ${names[receiver.i]}: ${transfer.toFixed(2)} Tk<br>`;
         payer.amt -= transfer;
         receiver.amt -= transfer;
-
         if (payer.amt < 0.01) owes.shift();
         if (receiver.amt < 0.01) gets.shift();
       }
 
-      document.getElementById('output').innerHTML = `<pre>${result}</pre>`;
+      invoiceHTML += `
+        <div class="invoice-footer">
+          <strong>Settlement Instructions:</strong>
+          <div class="settlement">${settlements || 'Everyone is settled up already!'}</div>
+        </div>`;
+
+      document.getElementById('output').innerHTML = invoiceHTML;
     }
   </script>
 </body>
